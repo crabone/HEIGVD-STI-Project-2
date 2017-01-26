@@ -444,7 +444,7 @@ frauduleuse ou d'une vente à un tier.
 **Acteur:** Un hacker.
 
 **Moyen(s):** Exploitation d'une faille de l'application ou du serveur.
-      (Code injection, authorization bypass)
+(Code injection, authorization bypass)
 
 **Motivation(s):** Vol dans un but d'aquérir de l'intelligence, de revente,
 d'usurpation d'identité, de pivot ou de chantage.
@@ -461,7 +461,7 @@ d'usurpation d'identité, de pivot ou de chantage.
 
 * Audit régulier de l'application web et de l'infrastructure système.
 * Stockage sécurisé des secrets (p.e. Hash des mots de passe).
-* Valider les inputs.
+* Valider les entrées.
 
 ]
 
@@ -559,6 +559,7 @@ d'usurpation d'identité, de pivot ou de chantage.
 
 * Audit régulier de l'application web et de l'infrastructure système.
 * Chiffrement de bout en bout;
+* Valider les entrées.
 
 ]
 
@@ -594,6 +595,17 @@ Elles aboutissent à des risques comme:
 ]
 .right-column[
 
+Après avoir élaborer les scénarios de menaces, on peut lister les contre-mesures
+à appliquer pour mitiger les vulnérabilités.
+
+* Audit régulier de l'application web et de l'infrastructure système.
+* Chiffrement de bout en bout;
+* Élaborer et appliquer une stratégie de sauvegarde de la base de données;
+* Documenter l'application web et le système;
+* Sensibiliser le nouveau personnel quant à l'utilisation du système.
+* Stockage sécurisé des secrets (p.e. Hash des mots de passe).
+* Valider les entrées.
+
 ]
 
 ---
@@ -603,9 +615,11 @@ Elles aboutissent à des risques comme:
   ### Scope
 ]
 .right-column[
+
+Suite aux contre-mesures, précédement listées, on a implémenté les mécanismes
+de sécurité suivants:
       
 * Stockage des mots de passe haché dans la base de donnée.
-      
 * Un mot de passe doit avoir une longueur minimale de 8 caractères.
 
 ]
