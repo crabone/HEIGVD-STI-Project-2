@@ -1,0 +1,640 @@
+<!--
+  Template stealed from the official demonstration presentation w/ remarkjs
+  https://remarkjs.com
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="keywords" content="remark,remarkjs,markdown,slideshow,presentation" />
+    <meta name="description" content="A simple, in-browser, markdown-driven slideshow tool." />
+    <title>Sécurisation d'une application de messagerie</title>
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif';
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.25em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 0.9em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 25%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+      .right-column h3 {
+        margin-top: 0.7em;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+
+# SÉCURISATION D'UNE APPLICATION DE MESSAGERIE
+Franchini Fabien ([@crab_one](https://twitter.com/crab_one)) et 
+Henneberger Sébastien ([@Shen299](https://twitter.com/Shen299))<br />
+25 Janvier 2017
+.footnote[...[Dépôt](https://github.com/crabone/STI) de la présentation]
+
+---
+
+layout: false
+.left-column[
+  ## Introduction
+]
+.right-column[
+
+### Au programme:
+
+* Rappel
+* Inventaire des actifs
+* Menaces
+* Implémentation
+
+![Taylor on Acting](assets/images/swift_on_act.jpg)
+
+]
+
+---
+
+.left-column[
+  ## Rappel
+  ### Qu'est-ce donc ?
+]
+.right-column[
+
+L'application de messagerie possède plusieurs fonctionnalités: Chaque
+utilisateur du service peut **envoyer**, **recevoir** et **lire** des
+messages. Le compte d'un utilisateur est protégé par un mot de passe.
+Chaque utilisateur peut se voir attribuer un ou plusieurs rôles:
+utilisateur et/ou administrateur.
+
+L'administrateur, en plus des privilèges utilisateurs, peut gérer les
+comptes des différents utilisateurs de l'application. C'est à dire qu'il
+peut rendre actif ou non, un utilisateur, le supprimer ou en ajouter
+un nouveau.
+
+]
+
+---
+.left-column[
+  ## Rappel
+  ### Qu'est-ce donc ?
+  ### DFD
+]
+.right-column[
+
+Pour avoir un meilleur aperçu du fonctionnement de l'application,
+d'un point de sa sécurité, on peut la représenter par un DFD.
+
+![DFD](assets/images/dfd.jpg)
+
+]
+---
+.left-column[
+  ## Rappel
+  ### Qu'est-ce donc ?
+  ### DFD
+  ### Actifs
+]
+.right-column[
+
+Nous nous concentrons sur les actifs sensibles à l'application, à savoir:
+
+* Les données utilisateurs;
+  * Identifiants, rôles et mots de passe.
+* Les messages.
+
+Ces actifs doivent remplir les critères de sécurité suivants:
+
+* Confidentialité;
+* Intégrité;
+* Disponibilité.
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes 
+]
+.right-column[
+
+### Les actifs peuvent être détruits.
+
+**Acteur:** Un administrateur.
+
+**Moyen(s):** Mauvaise manipulation (Mise à jours de l'application ou du système).
+
+**Motivation(s):** Aucune raison apparente.
+
+**Effet:** Destruction, indisponibilité.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Élaborer et appliquer une stratégie de sauvegarde de la base de données;
+* Documenter l'application web et le système;
+* Sensibiliser le nouveau personnel quant à l'utilisation du système.
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+]
+.right-column[
+
+### Les actifs peuvent être inaccessibles.
+
+**Acteur:** Un administrateur.
+
+**Moyen(s):** Mauvaise manipulation (Mise à jours de l'application ou du système).
+
+**Motivation(s):** Aucune raison apparente.
+
+**Effet:** Indisponibilité
+
+**Impact:**
+
+* Réputationnel (Moyen);
+* Financier (Faible);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Documenter l'application web et le système;
+* Sensibiliser le nouveau personnel quant à l'utilisation du système.
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+]
+.right-column[
+
+### Les actifs peuvent être détruits.
+
+**Acteur:** Un hacker (script-kiddie).
+
+**Moyen(s):** Exploitation d'une faille de l'application ou du serveur.
+
+**Motivation(s):** Pour le lulz.
+
+**Effet:** Destruction.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Élaborer et appliquer une stratégie de sauvegarde de la base de données;
+* Audit régulier de l'application web et de l'infrastructure système.
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+]
+.right-column[
+
+### Une erreur de conception peut aboutir à la destruction des actifs.
+
+**Acteur:** Bug applicatif.
+
+**Moyen(s):** -
+
+**Motivation(s):** -
+
+**Effet:** Indisponibilité et destruction.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Moyen);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Élaborer et appliquer une stratégie de sauvegarde de la base de données;
+* Audit régulier de l'application web et de l'infrastructure système.
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+]
+.right-column[
+
+### Le système hébergant l'application web peut tomber en panne.
+
+**Acteur:** Panne matérielle.
+
+**Moyen(s):** Suite à une surcharge, défaillance d'un disque.
+
+**Motivation(s):** -
+
+**Effet:** Indisponibilité et destruction.
+
+**Impact:**
+
+* Réputationnel (Moyen);
+* Financier (Moyen);
+* Productivité (Élevé).
+
+**Contremesures:**
+
+* Élaborer et appliquer une stratégie de sauvegarde de la base de données;
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+]
+.right-column[
+
+### Le système hébergant l'application web peut tomber en panne.
+
+**Acteur:** Un hacker.
+
+**Moyen(s):** DDoS.
+
+**Motivation(s):** Racket.
+
+**Effet:** Indisponibilité.
+
+**Impact:**
+
+* Réputationnel (Moyen);
+* Financier (Moyen);
+* Productivité (Élevé).
+
+**Contremesures:**
+.red[Risque accepté.]
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+  ### Données utilisateurs
+]
+.right-column[
+
+### Les données utilisateurs peuvent être volées.
+
+**Acteur:** Un administrateur.
+
+**Moyen(s):** Accès légitime à la base de donnée.
+
+**Motivation(s):** Vol suite à un licenciement dans le but d'une réutilisation
+frauduleuse ou d'une vente à un tier.
+
+**Effet:** Divulgation.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Faible).
+
+**Contremesures:**
+.red[Risque accepté.]
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+  ### Données utilisateurs
+]
+.right-column[
+
+### Les données utilisateurs peuvent être volées.
+
+**Acteur:** Un hacker.
+
+**Moyen(s):** Exploitation d'une faille de l'application ou du serveur.
+
+**Motivation(s):** Vol dans un but d'aquérir de l'intelligence, de revente,
+d'usurpation d'identité, de pivot ou de chantage.
+
+**Effet:** Divulgation.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Audit régulier de l'application web et de l'infrastructure système.
+* Stockage sécurisé des secrets (p.e. Hash des mots de passe).
+
+]
+
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+  ### Données utilisateurs
+  ### Messages 
+]
+.right-column[
+
+### Les messages peuvent être volés.
+
+**Acteur:** Un administrateur.
+
+**Moyen(s):** Accès légitime à la base de donnée.
+
+**Motivation(s):** Vol suite à un licenciement dans le but d'une réutilisation
+frauduleuse ou d'une vente à un tier. Par voyeurisme.
+
+**Effet:** Divulgation.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Faible).
+
+**Contremesures:**
+
+* Chiffrement de bout en bout;
+
+]
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+  ### Données utilisateurs
+  ### Messages
+]
+.right-column[
+
+### Les messages peuvent être modifiés.
+
+**Acteur:** Un administrateur.
+
+**Moyen(s):** Accès légitime à la base de donnée.
+
+**Motivation(s):** L'administrateur peut être payé par un tier (crime organisé, espionnage) pour le faire.
+
+**Effet:** Modification
+
+**Impact:**
+
+* Réputationnel (Faible);
+* Financier (Moyen);
+* Productivité (Faible).
+
+**Contremesures:**
+
+* Chiffrement de bout en bout;
+
+]
+---
+
+.left-column[
+  ## Menaces
+  ### Communes
+  ### Données utilisateurs
+  ### Messages
+]
+.right-column[
+
+### Les messages peuvent être volés.
+
+**Acteur:** Un hacker.
+
+**Moyen(s):** Exploitation d'une faille de l'application ou du serveur.
+
+**Motivation(s):** Vol dans un but d'aquérir de l'intelligence, de revente,
+d'usurpation d'identité, de pivot ou de chantage.
+
+**Effet:** Divulgation.
+
+**Impact:**
+
+* Réputationnel (Élevé);
+* Financier (Élevé);
+* Productivité (Moyen).
+
+**Contremesures:**
+
+* Audit régulier de l'application web et de l'infrastructure système.
+* Chiffrement de bout en bout;
+
+]
+
+---
+
+.left-column[
+  ## Bilan
+  ### Résumé
+]
+.right-column[
+
+Après analyse des scénarios de menace, on distingue **trois** sources de menace
+importantes:
+
+* Menaces internes (Administrateurs);
+* Menaces externes (Hackers, crime organisé);
+* Menaces techniques (Pannes, défaillances logicielles et matérielles).
+
+Elles aboutissent à des risques comme:
+
+* Le vol d'actifs;
+* La modification de données;
+* La destruction ou l'indisponibilité des actifs.
+
+]
+
+---
+
+.left-column[
+  ## Bilan
+  ### Résumé
+  ### Contremesures
+]
+.right-column[
+
+]
+
+---
+
+.left-column[
+  ## Implémentation
+  ### Scope
+]
+.right-column[
+
+]
+
+---
+
+.left-column[
+  ## Conclusion
+  ### Problèmes rencontrés
+]
+.right-column[
+
+* Replonger dans le code;
+  * Documentation insuffisante.
+* Temps imparti restreint.
+  * Fin de semestre **surchargé**.
+
+]
+
+---
+template: inverse
+
+# Le mot de la fin..
+    </textarea>
+    <script src="assets/js/remark-latest.min.js"></script>
+    <script>
+      var hljs = remark.highlighter.engine;
+    </script>
+    <script src="assets/js/remark.language.js"></script>
+    <script>
+      var slideshow = remark.create({
+          highlightStyle: 'monokai',
+          highlightLanguage: 'remark',
+          highlightLines: true
+        }) ;
+    </script>
+  </body>
+</html>
