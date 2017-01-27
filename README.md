@@ -7,9 +7,12 @@ Then, start web server with `sudo systemctl start httpd`.
 
 The VM is available under `\\eistore1\cours\iict\Laboratoires\STI\Base_VM`.
 
-Credentials :
+VM credentials :
 * User: STI/sti
 * Administrateur: root/toor
+
+Application credentials :
+* admin/administrateur
 
 ## Talk
 
